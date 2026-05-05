@@ -1,7 +1,12 @@
 {
-    "status": "PASS",
-    "reason": "Commit verified. Code satisfies the current governance rules.",
+    "status": "FAIL",
+    "reason": "Commit rejected because the code violates governance rules:\n\n1. Button Label Rule violated: Code uses Submit, but expected Pay Now.\n2. Color Rule violated: Code uses red styling, but expected blue.\n3. Pay Now Rule violated: Code does not contain Pay Now button.\n4. Blue Button Rule violated: Code does not contain blue styling.\n",
     "developer": "GhostTrace Team",
-    "failed_rules": [],
-    "timestamp": "2026-05-05 21:49:14"
+    "failed_rules": [
+        "Button Label Rule violated: Code uses Submit, but expected Pay Now.",
+        "Color Rule violated: Code uses red styling, but expected blue.",
+        "Pay Now Rule violated: Code does not contain Pay Now button.",
+        "Blue Button Rule violated: Code does not contain blue styling."
+    ],
+    "timestamp": "2026-05-05 23:25:09"
 }
