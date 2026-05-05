@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GhostTrace Sentinel | AI Code Governance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-main: #050816;
+            --bg-card: rgba(15, 23, 42, 0.82);
+            --bg-glass: rgba(15, 23, 42, 0.55);
+            --border-soft: rgba(148, 163, 184, 0.18);
+            --blue: #38bdf8;
+            --blue-strong: #2563eb;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #facc15;
+            --purple: #a855f7;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-soft: #cbd5e1;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(56, 189, 248, 0.22), transparent 35%),
+                radial-gradient(circle at top right, rgba(168, 85, 247, 0.18), transparent 30%),
+                radial-gradient(circle at bottom, rgba(34, 197, 94, 0.12), transparent 35%),
+                var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 42px 42px;
+            pointer-events: none;
+            mask-image: linear-gradient(to bottom, black, transparent);
+        }
+
+        .page {
+            width: min(1450px, 94%);
+            margin: 0 auto;
+            padding: 28px 0 45px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .topbar {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.72));
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            box-shadow: 0 0 35px rgba(56, 189, 248, 0.12), inset 0 0 25px rgba(56, 189, 248, 0.04);
+            border-radius: 24px;
+            padding: 24px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(18px);
+            margin-bottom: 26px;
+        }
+
+        .brand-block h1 {
+            font-size: 34px;
+            letter-spacing: 2px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-block h1 span {
+            color: var(--blue);
+            text-shadow: 0 0 22px rgba(56, 189, 248, 0.55);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            margin-top: 7px;
+            font-size: 14px;
+        }
+
+        .operator {
+            color: var(--blue);
+            font-weight: 700;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(34, 197, 94, 0.12);
+            color: #86efac;
+            padding: 12px 18px;
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .pulse-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--green);
+            border-radius: 50%;
+            box-shadow: 0 0 18px var(--green);
+            animation: pulse 1.4s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.7); opacity: .45; }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 410px 1fr;
+            gap: 26px;
+            align-items: stretch;
+        }
+
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 24px;
+            padding: 24px;
+            backdrop-filter: blur(18px);
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.06), transparent 45%);
+            opacity: 0;
+            transition: 0.35s ease;
+            pointer-events: none;
+        }
+
+        .panel:hover::after {
+            opacity: 1;
+        }
+
+        .section-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            letter-spacing: 1.4px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+        }
+
+        .section-title::before {
+            content: "";
+            width: 9px;
+            height: 9px;
+            background: var(--blue);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--blue);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        input, textarea {
+            width: 100%;
+            background: rgba(2, 6, 23, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            color: var(--text-main);
+            border-radius: 15px;
+            padding: 13px 14px;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            transition: 0.25s ease;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 170px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        input:focus, textarea:focus {
+            border-color: rgba(56, 189, 248, 0.7);
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.08);
+        }
+
+        .btn {
+            width: 100%;
+            border: none;
+            border-radius: 15px;
+            padding: 14px 16px;
+            font-weight: 800;
+            color: white;
+            cursor: pointer;
+            transition: 0.25s ease;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+            font-size: 13px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 70%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+            transition: 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 120%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-blue {
+            background: linear-gradient(135deg, #2563eb, #38bdf8);
+            box-shadow: 0 12px 26px rgba(37, 99, 235, 0.28);
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            box-shadow: 0 12px 26px rgba(34, 197, 94, 0.24);
+        }
+
+        .btn-purple {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            box-shadow: 0 12px 26px rgba(168, 85, 247, 0.24);
+        }
+
+        .btn-red {
+            background: linear-gradient(135deg, #b91c1c, #ef4444);
+            box-shadow: 0 12px 26px rgba(239, 68, 68, 0.24);
+        }
+
+        .two-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .hint {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 9px;
+            line-height: 1.5;
+        }
+
+        .audit-panel {
+            min-height: 690px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .audit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+        }
+
+        .verdict-badge {
+            padding: 9px 15px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+        }
+
+        .badge-waiting {
+            background: rgba(250, 204, 21, 0.12);
+            color: #fde68a;
+            border: 1px solid rgba(250, 204, 21, 0.25);
+        }
+
+        .badge-pass {
+            background: rgba(34, 197, 94, 0.12);
+            color: #86efac;
+            border: 1px solid rgba(34, 197, 94, 0.28);
+        }
+
+        .badge-fail {
+            background: rgba(239, 68, 68, 0.12);
+            color: #fecaca;
+            border: 1px solid rgba(239, 68, 68, 0.28);
+        }
+
+        .main-verdict {
+            flex: 1;
+            border-radius: 24px;
+            background:
+                radial-gradient(circle at center, rgba(56, 189, 248, 0.1), transparent 32%),
+                rgba(2, 6, 23, 0.55);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 34px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 420px;
+        }
+
+        .main-verdict::before {
+            content: "";
+            position: absolute;
+            width: 360px;
+            height: 360px;
+            background: conic-gradient(from 0deg, transparent, rgba(56, 189, 248, .25), transparent, rgba(168, 85, 247, .18), transparent);
+            border-radius: 50%;
+            animation: rotateRing 7s linear infinite;
+            opacity: .45;
+        }
+
+        @keyframes rotateRing {
+            to { transform: rotate(360deg); }
+        }
+
+        .shield {
+            width: 92px;
+            height: 92px;
+            border-radius: 28px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(168, 85, 247, 0.20));
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            display: grid;
+            place-items: center;
+            font-size: 44px;
+            margin-bottom: 24px;
+            box-shadow: 0 0 38px rgba(56, 189, 248, 0.2);
+            position: relative;
+            z-index: 2;
+        }
+
+        .verdict-title {
+            font-size: 36px;
+            font-weight: 900;
+            letter-spacing: 1.4px;
+            margin-bottom: 13px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .verdict-title.waiting {
+            color: var(--yellow);
+            text-shadow: 0 0 22px rgba(250, 204, 21, .25);
+        }
+
+        .verdict-title.pass {
+            color: #4ade80;
+            text-shadow: 0 0 22px rgba(34, 197, 94, .35);
+        }
+
+        .verdict-title.fail {
+            color: #f87171;
+            text-shadow: 0 0 22px rgba(239, 68, 68, .35);
+        }
+
+        .verdict-reason {
+            color: var(--text-soft);
+            max-width: 720px;
+            line-height: 1.8;
+            position: relative;
+            z-index: 2;
+            font-size: 15px;
+        }
+
+        .meta-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .metric {
+            background: rgba(2, 6, 23, 0.65);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            border-radius: 18px;
+            padding: 16px;
+        }
+
+        .metric-title {
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 7px;
+        }
+
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            color: var(--text-main);
+            word-break: break-word;
+        }
+
+        .terminal {
+            margin-top: 18px;
+            background: #020617;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        .terminal-top {
+            padding: 11px 14px;
+            background: rgba(15, 23, 42, 0.9);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .circle {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+        }
+
+        .c-red { background: #ef4444; }
+        .c-yellow { background: #facc15; }
+        .c-green { background: #22c55e; }
+
+        .terminal-body {
+            padding: 16px;
+            min-height: 145px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.65;
+            color: #cbd5e1;
+            white-space: pre-wrap;
+        }
+
+        .side-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .mini-card {
+            background: rgba(2, 6, 23, 0.45);
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            padding: 15px;
+            border-radius: 18px;
+            margin-bottom: 12px;
+        }
+
+        .mini-card strong {
+            color: var(--blue);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .flow-line {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            color: var(--text-soft);
+            font-size: 13px;
+            margin-top: 11px;
+        }
+
+        .flow-dot {
+            width: 25px;
+            height: 25px;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: var(--blue);
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .toast {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            color: white;
+            padding: 15px 18px;
+            border-radius: 16px;
+            box-shadow: 0 22px 70px rgba(0,0,0,0.35);
+            transform: translateY(140%);
+            transition: .35s ease;
+            z-index: 20;
+            font-weight: 700;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+        }
+
+        .file-label {
+            background: rgba(2, 6, 23, 0.7);
+            border: 1px dashed rgba(56, 189, 248, 0.35);
+            border-radius: 15px;
+            padding: 14px;
+            cursor: pointer;
+            color: var(--text-soft);
+        }
+
+        input[type="file"] {
+            padding: 11px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 1050px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 18px;
+            }
+
+            .meta-row {
+                grid-template-columns: 1fr;
+            }
+
+            .two-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <header class="topbar">
+        <div class="brand-block">
+            <h1>🛡️ GhostTrace <span>Sentinel</span></h1>
+            <p class="subtitle">
+                Active Operator:
+                <span class="operator" id="activeOperator">Not Logged In</span>
+                · Local AI Governance Prototype
+            </p>
+        </div>
+
+        <div class="status-pill">
+            <span class="pulse-dot"></span>
+            Pipeline Online
+        </div>
+    </header>
+
+    <main class="dashboard-grid">
+
+        <section class="side-stack">
+
+            <div class="panel">
+                <h2 class="section-title">Operator Login</h2>
+
+                <div class="form-group">
+                    <label>Developer / Admin Name</label>
+                    <input type="text" id="developerName" placeholder="Example: GhostTrace Team">
+                </div>
+
+                <div class="form-group">
+                    <label>Access ID</label>
+                    <input type="text" id="developerId" placeholder="Use SENTINEL2026">
+                </div>
+
+                <button class="btn btn-blue" onclick="loginUser()">Authenticate Operator</button>
+
+                <p class="hint" id="loginStatus">Status: Waiting for login.</p>
+            </div>
+
+            <div class="panel">
+                <h2 class="section-title">Policy Definition</h2>
+
+                <div class="form-group">
+                    <label>Business Requirement / Governance Rule</label>
+                    <textarea id="requirements"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Design Reference / UI Sketch</label>
+                    <input type="file" id="designImage">
+                    <p class="hint">Optional: upload your checkout UI sketch or design image.</p>
+                </div>
+
+                <button class="btn btn-green" onclick="syncContext()">Sync Governance Context</button>
+
+                <p class="hint" id="syncStatus">Context status: Not synced yet.</p>
+            </div>
+
+            <div class="panel">
+                <h2 class="section-title">Git Commit Control</h2>
+                <div class="form-group">
+                    <label>Commit Message</label>
+                    <input type="text" id="commitMessage" placeholder="Example: Add GhostTrace frontend dashboard">
+                </div>
+                <button class="btn btn-purple" onclick="gitCommit()">Run Git Commit</button>
+                <p class="hint">
+                    This will run git add . and git commit from the backend after operator login.
+                </p>
+            </div>
+
+            <div class="panel">
+                <h2 class="section-title">System Workflow</h2>
+
+                <div class="flow-line">
+                    <div class="flow-dot">1</div>
+                    <div>Admin defines requirement and design reference.</div>
+                </div>
+
+                <div class="flow-line">
+                    <div class="flow-dot">2</div>
+                    <div>Backend stores context in current_context.json.</div>
+                </div>
+
+                <div class="flow-line">
+                    <div class="flow-dot">3</div>
+                    <div>Judge engine generates latest_report.json.</div>
+                </div>
+
+                <div class="flow-line">
+                    <div class="flow-dot">4</div>
+                    <div>Dashboard displays PASS / FAIL in real time.</div>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="panel audit-panel">
+
+            <div class="audit-header">
+                <h2 class="section-title">Live Judicial Audit</h2>
+                <span id="verdictBadge" class="verdict-badge badge-waiting">Waiting</span>
+            </div>
+
+            <div id="mainVerdict" class="main-verdict">
+                <div class="shield" id="shieldIcon">🧠</div>
+                <div id="verdictTitle" class="verdict-title waiting">SYSTEM WAITING</div>
+                <div id="verdictReason" class="verdict-reason">
+                    Sync governance context and run audit to generate the latest compliance verdict.
+                </div>
+            </div>
+
+            <div class="meta-row">
+                <div class="metric">
+                    <div class="metric-title">Developer</div>
+                    <div class="metric-value" id="metricDeveloper">Unknown</div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-title">Last Audit Time</div>
+                    <div class="metric-value" id="metricTime">Not available</div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-title">Engine Mode</div>
+                    <div class="metric-value">Mock / Local Judge</div>
+                </div>
+            </div>
+
+            <div class="two-buttons">
+                <button class="btn btn-purple" onclick="runAudit()">Run Judicial Audit</button>
+                <button class="btn btn-red" onclick="resetPanel()">Reset Panel</button>
+            </div>
+
+            <div class="terminal">
+                <div class="terminal-top">
+                    <div class="circle c-red"></div>
+                    <div class="circle c-yellow"></div>
+                    <div class="circle c-green"></div>
+                    <span style="margin-left: 8px; color: #94a3b8; font-size: 12px;">sentinel-terminal</span>
+                </div>
+
+                <div class="terminal-body" id="auditOutput">> GhostTrace Sentinel initialized...
+> Waiting for operator command...</div>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<div id="toast" class="toast">Notification</div>
+
+<script>
+    let loggedInDeveloper = "";
+
+    function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.innerText = message;
+        toast.classList.add("show");
+
+        setTimeout(() => {
+            toast.classList.remove("show");
+        }, 2600);
+    }
+
+    async function loginUser() {
+        const name = document.getElementById("developerName").value.trim();
+        const devId = document.getElementById("developerId").value.trim();
+
+        if (!name || !devId) {
+            showToast("Please enter name and access ID.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("team_name", name);
+        formData.append("access_key", devId);
+
+        try {
+            const response = await fetch("/api/login", {
+                method: "POST",
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                loggedInDeveloper = data.developer;
+
+                document.getElementById("loginStatus").innerText =
+                    "Status: Authenticated as " + loggedInDeveloper;
+
+                document.getElementById("activeOperator").innerText =
+                    loggedInDeveloper;
+
+                showToast("Operator authenticated successfully.");
+            } else {
+                document.getElementById("loginStatus").innerText =
+                    "Status: Authentication failed.";
+
+                showToast("Login failed. Use access key: SENTINEL2026.");
+            }
+        } catch (error) {
+            showToast("Backend server not reachable.");
+            console.error(error);
+        }
+    }
+
+    async function syncContext() {
+        const requirements = document.getElementById("requirements").value.trim();
+        const designImage = document.getElementById("designImage").files[0];
+
+        if (!loggedInDeveloper) {
+            showToast("Please login first.");
+            return;
+        }
+
+        if (!requirements) {
+            showToast("Please enter business requirements.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("requirements", requirements);
+        formData.append("developer", loggedInDeveloper);
+
+        if (designImage) {
+            formData.append("design_image", designImage);
+        }
+
+        try {
+            const response = await fetch("/api/sync", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                document.getElementById("syncStatus").innerText =
+                    "Context status: Synced successfully.";
+
+                showToast("Governance context synced.");
+            } else {
+                document.getElementById("syncStatus").innerText =
+                    "Context status: Sync failed.";
+
+                showToast("Context sync failed.");
+            }
+
+            console.log(data);
+
+        } catch (error) {
+            showToast("Server error during sync.");
+            console.error(error);
+        }
+    }
+
+    async function runAudit() {
+        if (!loggedInDeveloper) {
+        showToast("Please login first to run audit.");
+        return;
+    }
+        document.getElementById("auditOutput").innerText =
+            "> Running GhostTrace judicial audit...\n> Executing judge_engine.py...\n> Please wait...";
+
+        try {
+            const response = await fetch("/api/audit", {
+                method: "POST"
+            });
+
+            const data = await response.json();
+
+            let output = "";
+            output += "> Audit API response received\n";
+            output += "> Status: " + (data.status || "unknown") + "\n";
+            output += "> Exit Code: " + (data.exit_code ?? "N/A") + "\n\n";
+
+            if (data.output) {
+                output += data.output + "\n";
+            }
+
+            if (data.error) {
+                output += "\nERROR:\n" + data.error;
+            }
+
+            document.getElementById("auditOutput").innerText = output;
+
+            fetchReport();
+            showToast("Audit execution completed.");
+
+        } catch (error) {
+            document.getElementById("auditOutput").innerText =
+                "> ERROR: Could not run audit.\n> Check if FastAPI backend is running.";
+
+            showToast("Audit failed to start.");
+            console.error(error);
+        }
+    }
+
+    async function fetchReport() {
+        try {
+            const response = await fetch("/api/report");
+            const data = await response.json();
+
+            const status = (data.status || "WAITING").toUpperCase();
+            const reason = data.reason || "No audit report available yet.";
+            const developer = data.developer || "Unknown";
+            const timestamp = data.timestamp || "Not available";
+
+            const verdictTitle = document.getElementById("verdictTitle");
+            const verdictReason = document.getElementById("verdictReason");
+            const verdictBadge = document.getElementById("verdictBadge");
+            const shieldIcon = document.getElementById("shieldIcon");
+
+            verdictReason.innerText = reason;
+            document.getElementById("metricDeveloper").innerText = developer;
+            document.getElementById("metricTime").innerText = timestamp;
+
+            verdictTitle.className = "verdict-title";
+            verdictBadge.className = "verdict-badge";
+
+            if (status === "PASS" || status === "VERIFIED") {
+                verdictTitle.innerText = "COMMIT VERIFIED";
+                verdictTitle.classList.add("pass");
+
+                verdictBadge.innerText = "Verified";
+                verdictBadge.classList.add("badge-pass");
+
+                shieldIcon.innerText = "✅";
+            } else if (status === "FAIL" || status === "FAILED") {
+                verdictTitle.innerText = "COMMIT REJECTED";
+                verdictTitle.classList.add("fail");
+
+                verdictBadge.innerText = "Violation Detected";
+                verdictBadge.classList.add("badge-fail");
+
+                shieldIcon.innerText = "⛔";
+            } else {
+                verdictTitle.innerText = "SYSTEM WAITING";
+                verdictTitle.classList.add("waiting");
+
+                verdictBadge.innerText = "Waiting";
+                verdictBadge.classList.add("badge-waiting");
+
+                shieldIcon.innerText = "🧠";
+            }
+
+        } catch (error) {
+            console.error("Report fetch failed:", error);
+        }
+    }
+
+    function resetPanel() {
+        document.getElementById("verdictTitle").innerText = "SYSTEM WAITING";
+        document.getElementById("verdictTitle").className = "verdict-title waiting";
+        document.getElementById("verdictReason").innerText =
+            "Panel reset. Run audit again to generate a new compliance verdict.";
+        document.getElementById("verdictBadge").innerText = "Waiting";
+        document.getElementById("verdictBadge").className = "verdict-badge badge-waiting";
+        document.getElementById("shieldIcon").innerText = "🧠";
+        document.getElementById("auditOutput").innerText =
+            "> Panel reset complete.\n> Waiting for next command...";
+        showToast("Frontend panel reset.");
+    }
+
+    async function gitCommit() {
+    if (!loggedInDeveloper) {
+        showToast("Please login first to run Git commit.");
+        return;
+    }
+
+    const commitMessage = document.getElementById("commitMessage").value.trim();
+
+    if (!commitMessage) {
+        showToast("Please enter a commit message.");
+        return;
+    }
+
+    document.getElementById("auditOutput").innerText =
+        "> Starting Git commit process...\n> Running git add .\n> Running git commit...\n";
+
+    const formData = new FormData();
+    formData.append("commit_message", commitMessage);
+
+    try {
+        const response = await fetch("/api/git-commit", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        let output = "";
+        output += "> Git Commit API response received\n";
+        output += "> Status: " + (data.status || "unknown") + "\n";
+        output += "> Exit Code: " + (data.exit_code ?? "N/A") + "\n\n";
+
+        if (data.git_add_output) {
+            output += "GIT ADD OUTPUT:\n" + data.git_add_output + "\n";
+        }
+
+        if (data.git_add_error) {
+            output += "GIT ADD ERROR:\n" + data.git_add_error + "\n";
+        }
+
+        if (data.commit_output) {
+            output += "GIT COMMIT OUTPUT:\n" + data.commit_output + "\n";
+        }
+
+        if (data.commit_error) {
+            output += "GIT COMMIT ERROR:\n" + data.commit_error + "\n";
+        }
+
+        if (data.error) {
+            output += "ERROR:\n" + data.error + "\n";
+        }
+
+        document.getElementById("auditOutput").innerText = output;
+
+        if (data.exit_code === 0) {
+            showToast("Git commit completed successfully.");
+        } else {
+            showToast("Git commit failed. Check terminal output.");
+        }
+
+    } catch (error) {
+        document.getElementById("auditOutput").innerText =
+            "> ERROR: Git commit request failed.\n> Check backend server.";
+
+        showToast("Git commit failed.");
+        console.error(error);
+    }
+}
+    setInterval(fetchReport, 2500);
+    fetchReport();
+</script>
+
+
+</body>
+</html>
