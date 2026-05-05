@@ -1,6 +1,6 @@
 {
     "developer": "GhostTrace Team",
-    "requirement": "The checkout page must include a blue payment button labeled Pay Now.\r\n\r\nThe system must reject checkout pages that use red buttons or wrong labels such as Submit.\r\n\r\nThe checkout form must include Cardholder Name, Card Number, Expiry Date, and CVV.\r\n\r\nThe payment UI must be safe, clear, and aligned with secure checkout standards.",
+    "requirement": "The checkout page must contain a payment section.\r\n\r\nThe primary payment button must be blue and labeled Pay Now.\r\n\r\nThe page should include Cardholder Name, Card Number, Expiry Date, and CVV fields.\r\n\r\nSensitive payment data must be protected.",
     "image_path": "",
-    "last_synced": "2026-05-05 21:25:35"
+    "last_synced": "2026-05-05 21:49:12"
 }
