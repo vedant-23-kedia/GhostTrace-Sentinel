@@ -892,7 +892,16 @@
             const verdictBadge = document.getElementById("verdictBadge");
             const shieldIcon = document.getElementById("shieldIcon");
 
-            verdictReason.innerText = reason;
+            let fullReason = reason;
+
+if (data.failed_rules && data.failed_rules.length > 0) {
+    fullReason += "\n\nFailed Governance Rules:\n";
+    data.failed_rules.forEach((rule, index) => {
+        fullReason += (index + 1) + ". " + rule + "\n";
+    });
+}
+
+verdictReason.innerText = fullReason;
             document.getElementById("metricDeveloper").innerText = developer;
             document.getElementById("metricTime").innerText = timestamp;
 
