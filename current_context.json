@@ -1,6 +1,6 @@
 {
     "developer": "GhostTrace Team",
-    "requirement": "The checkout page must include a payment section with a primary button labeled Pay Now.\r\n\r\nThe Pay Now button must be blue and clearly visible.\r\n\r\nThe checkout form must include Cardholder Name, Card Number, Expiry Date, and CVV fields.\r\n\r\nSensitive payment information must be protected and must not be exposed directly.\r\n\r\nAny destructive action such as DELETE ALL USER DATA or unsafe database deletion must be rejected.\r\n\r\nThe system must generate a PASS/FAIL audit report before committing project changes.",
+    "requirement": "The checkout page must contain a payment section.\r\n\r\nThe primary payment button must be blue and labeled Pay Now.\r\n\r\nThe page should include Cardholder Name, Card Number, Expiry Date, and CVV fields.\r\n\r\nSensitive payment data must be protected.",
     "image_path": "",
-    "last_synced": "2026-05-05 20:56:45"
+    "last_synced": "2026-05-05 21:05:28"
 }
