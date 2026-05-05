@@ -1,6 +1,7 @@
 {
     "status": "PASS",
-    "reason": "Commit verified. Requirement found and code passed the current governance checks.",
+    "reason": "Commit verified. Code satisfies the current secure checkout governance rules.",
     "developer": "GhostTrace Team",
-    "timestamp": "2026-05-05 21:09:00"
+    "failed_rules": [],
+    "timestamp": "2026-05-05 21:13:15"
 }
